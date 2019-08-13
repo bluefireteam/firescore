@@ -2,6 +2,8 @@ import 'dart:async';
 import 'package:aqueduct/aqueduct.dart';
 
 import '../model/account.dart';
+import '../model/game.dart';
+import '../model/score.dart';
 import '../util.dart';
 
 class AccountPasswordVerifier implements AuthValidator {
@@ -25,7 +27,7 @@ class AccountPasswordVerifier implements AuthValidator {
 
         if (fetchedAccount != null) {
             if (fetchedAccount.password == credentials.password) {
-                return Authorization(null, null, this);
+                return Authorization(null, null, this, credentials: credentials);
             }
         }
 
@@ -38,17 +40,24 @@ Map<String, dynamic> _mapAccount(Account account) => {
     "email": account.email,
 };
 
-class AccountController  extends ResourceController {
-    AccountController(this.context);
+
+Future<Account> _getAccount(Request request, ManagedContext context) async {
+    final email = request.authorization.credentials.username;
+
+    final query = Query<Account>(context)
+            ..where((a) => a.email).equalTo(email);
+
+    return await query.fetchOne();
+}
+
+class AdminAccountController  extends ResourceController {
+    AdminAccountController(this.context);
 
     final ManagedContext context;
 
-    @Operation.get('id')
-    Future<Response> getAccount(@Bind.path('id') int id) async {
-        final query = Query<Account>(context)
-            ..where((a) => a.id).equalTo(id);
-
-        final account = await query.fetchOne();
+    @Operation.get()
+    Future<Response> getAccount() async {
+        final account = await _getAccount(request, context);
 
         return Response.ok(_mapAccount(account));
     }
@@ -69,4 +78,90 @@ class CreateAccountController extends ResourceController {
 
         return Response.ok(_mapAccount(insertedAccount));
     }
+}
+
+class ManageGamesController extends ResourceController {
+    ManageGamesController(this.context);
+
+    final ManagedContext context;
+
+    @Operation.post()
+    Future<Response> createGame(@Bind.body() Game game) async {
+        game.account = await _getAccount(request, context);
+
+        final insertedGame = await context.insertObject(game);
+
+        return Response.ok(insertedGame);
+    }
+
+    @Operation.get()
+    Future<Response> getGames() async {
+        final account = await _getAccount(request, context);
+
+        final query = Query<Game>(context)
+                ..where((game) => game.account.id).equalTo(account.id);
+
+        final games = await query.fetch();
+
+        return Response.ok(games);
+    }
+
+    @Operation.delete('gameId')
+    Future<Response> deleteGame(@Bind.path('gameId') int id) async {
+        final account = await _getAccount(request, context);
+
+        final query = Query<Game>(context)
+                ..where((game) => game.account.id).equalTo(account.id)
+                ..where((game) => game.id).equalTo(id);
+
+        await query.delete();
+
+        return Response.noContent();
+    }
+}
+
+class ManageScoreBoardController extends ResourceController {
+    ManageScoreBoardController(this.context);
+
+    final ManagedContext context;
+
+    Future<Game> _fetchGame(int gameId, { bool fetchScoreBoards = false }) async {
+
+        final account = await _getAccount(request, context);
+        final query = Query<Game>(context)
+                ..where((game) => game.account.id).equalTo(account.id)
+                ..where((game) => game.id).equalTo(gameId);
+
+        if (fetchScoreBoards) {
+            query.join(set: (game) => game.scoreBoards);
+        }
+
+        return await query.fetchOne();
+    }
+
+    @Operation.post('gameId')
+    Future<Response> createGame(@Bind.path('gameId') int gameId, @Bind.body() ScoreBoard scoreBoard) async {
+        final game = await _fetchGame(gameId);
+
+        if (game != null) {
+            scoreBoard.game = game;
+
+            final insertScoreBoard = await context.insertObject(scoreBoard);
+            return Response.ok(insertScoreBoard);
+        } else {
+            return Response.notFound();
+        }
+    }
+
+    @Operation.get('gameId')
+    Future<Response> listScoreBoards(@Bind.path('gameId') int gameId) async {
+        final game = await _fetchGame(gameId, fetchScoreBoards: true);
+
+        if (game != null) {
+            return Response.ok(game.scoreBoards);
+        } else {
+            return Response.notFound();
+        }
+    }
+
 }

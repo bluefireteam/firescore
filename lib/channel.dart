@@ -39,9 +39,19 @@ class FirescoreChannel extends ApplicationChannel {
                 .link(() => CreateAccountController(context));
 
         router
-                .route("/accounts/:id")
+                .route("/admin/account")
                 .link(() => Authorizer.basic(AccountPasswordVerifier(context)))
-                .link(() => CreateAccountController(context));
+                .link(() => AdminAccountController(context));
+
+        router
+                .route("/admin/games/[:gameId]")
+                .link(() => Authorizer.basic(AccountPasswordVerifier(context)))
+                .link(() => ManageGamesController(context));
+
+        router
+                .route("/admin/games/:gameId/score_boards/[:scoreBoardId]")
+                .link(() => Authorizer.basic(AccountPasswordVerifier(context)))
+                .link(() => ManageScoreBoardController(context));
 
         return router;
     }
