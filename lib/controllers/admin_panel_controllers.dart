@@ -164,4 +164,19 @@ class ManageScoreBoardController extends ResourceController {
         }
     }
 
+    @Operation.delete('gameId', 'scoreBoardId')
+    Future<Response> deleteScoreBoard(@Bind.path('gameId') int gameId, @Bind.path('scoreBoardId') int scoreBoardId) async {
+        final game = await _fetchGame(gameId, fetchScoreBoards: true);
+
+        if (game != null) {
+            final query = Query<ScoreBoard>(context)
+                    ..where((scoreBoard) => scoreBoard.id).equalTo(scoreBoardId);
+
+            await query.delete();
+
+            return Response.noContent();
+        } else {
+            return Response.notFound();
+        }
+    }
 }
