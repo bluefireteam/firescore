@@ -12,6 +12,10 @@ class _ScoreBoard {
     @Relate(#scoreBoards, isRequired: true, onDelete: DeleteRule.cascade)
     Game game;
 
+    @Column(nullable: false)
+    String uuid;
+
+
     ManagedSet<Score> scores;
 }
 

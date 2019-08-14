@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:aqueduct/aqueduct.dart';
+import 'package:uuid/uuid.dart';
 
 import '../model/account.dart';
 import '../model/game.dart';
@@ -124,6 +125,7 @@ class ManageScoreBoardController extends ResourceController {
     ManageScoreBoardController(this.context);
 
     final ManagedContext context;
+    final _uuid = Uuid();
 
     Future<Game> _fetchGame(int gameId, { bool fetchScoreBoards = false }) async {
 
@@ -140,10 +142,11 @@ class ManageScoreBoardController extends ResourceController {
     }
 
     @Operation.post('gameId')
-    Future<Response> createGame(@Bind.path('gameId') int gameId, @Bind.body() ScoreBoard scoreBoard) async {
+    Future<Response> createScoreBoard(@Bind.path('gameId') int gameId, @Bind.body() ScoreBoard scoreBoard) async {
         final game = await _fetchGame(gameId);
 
         if (game != null) {
+            scoreBoard.uuid = _uuid.v4();
             scoreBoard.game = game;
 
             final insertScoreBoard = await context.insertObject(scoreBoard);
