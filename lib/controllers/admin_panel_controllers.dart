@@ -147,6 +147,7 @@ class ManageScoreBoardController extends ResourceController {
 
         if (game != null) {
 
+            scoreBoard.uuid = _uuid.v4();
             scoreBoard.game = game;
 
             final insertScoreBoard = await context.insertObject(scoreBoard);
