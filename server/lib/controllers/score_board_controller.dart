@@ -96,16 +96,25 @@ class ListScoreController extends ResourceController {
     final ManagedContext context;
 
     @Operation.get('scoreBoardUui')
-    Future<Response> listScores(@Bind.path('scoreBoardUui') String scoreBoardUui, @Bind.query("sortOrder") String sortOrder) async {
+    Future<Response> listScores(
+            @Bind.path('scoreBoardUui') String scoreBoardUui,
+            @Bind.query("sortOrder") String sortOrder,
+            { @Bind.query("playerId") String playerId }
+    ) async {
         final scoreBoardQuery = Query<ScoreBoard>(context)
                 ..where((s) => s.uuid).equalTo(scoreBoardUui);
 
         final fetchedScoreBoard = await scoreBoardQuery.fetchOne();
 
-        final scoreQuery = Query<Score>(context)
+        var scoreQuery = Query<Score>(context)
                 ..where((s) => s.scoreBoard.id).equalTo(fetchedScoreBoard.id)
                 ..sortBy((s) => s.score, sortOrder == "ASC" ? QuerySortOrder.ascending : QuerySortOrder.descending)
                 ..fetchLimit = 100;
+
+        if (playerId != null) {
+            scoreQuery = scoreQuery
+                    ..where((s) => s.playerId).equalTo(playerId);
+        }
 
         final scores = await scoreQuery.fetch();
 
