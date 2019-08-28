@@ -19,8 +19,9 @@ bool _verifyToken(String secret, String token) {
     final signer = JWTHmacSha256Signer(secret);
     final decodedToken = JWT.parse(token);
 
-    // TODO check expiresAt
-    return decodedToken.verify(signer);
+    final validator = JWTValidator();
+    final errors = validator.validate(decodedToken);
+    return decodedToken.verify(signer) && errors.isEmpty;
 }
 
 Map<String, dynamic> _getTokenInfo(String secret, String token) {
