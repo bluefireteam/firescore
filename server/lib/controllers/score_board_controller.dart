@@ -19,6 +19,7 @@ bool _verifyToken(String secret, String token) {
     final signer = JWTHmacSha256Signer(secret);
     final decodedToken = JWT.parse(token);
 
+    // TODO check expiresAt
     return decodedToken.verify(signer);
 }
 
@@ -80,5 +81,34 @@ class CreateScoreController extends ResourceController {
         await context.insertObject(score);
 
         return Response.noContent();
+    }
+}
+
+Map<String, dynamic> _mapScore(Score score) => {
+    'playerId': score.playerId,
+    'score': score.score,
+    'metadata': score.metadata
+};
+
+class ListScoreController extends ResourceController {
+    ListScoreController(this.context);
+
+    final ManagedContext context;
+
+    @Operation.get('scoreBoardUui')
+    Future<Response> listScores(@Bind.path('scoreBoardUui') String scoreBoardUui, @Bind.query("sortOrder") String sortOrder) async {
+        final scoreBoardQuery = Query<ScoreBoard>(context)
+                ..where((s) => s.uuid).equalTo(scoreBoardUui);
+
+        final fetchedScoreBoard = await scoreBoardQuery.fetchOne();
+
+        final scoreQuery = Query<Score>(context)
+                ..where((s) => s.scoreBoard.id).equalTo(fetchedScoreBoard.id)
+                ..sortBy((s) => s.score, sortOrder == "ASC" ? QuerySortOrder.ascending : QuerySortOrder.descending)
+                ..fetchLimit = 100;
+
+        final scores = await scoreQuery.fetch();
+
+        return Response.ok(scores.map(_mapScore).toList());
     }
 }

@@ -63,6 +63,10 @@ class FirescoreChannel extends ApplicationChannel {
                 .link(() => Authorizer.bearer(JwtVerifier()))
                 .link(() => CreateScoreController(context));
 
+        router
+                .route("/scores/:scoreBoardUui")
+                .link(() => ListScoreController(context));
+
         return router;
     }
 }
