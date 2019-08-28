@@ -28,6 +28,11 @@ class _Score {
     @Column(nullable: false, indexed: true)
     String playerId;
 
+    @Column(nullable: false, indexed: true)
+    double score;
+
+    String metadata;
+
     @Relate(#scores, isRequired: true, onDelete: DeleteRule.cascade)
     ScoreBoard scoreBoard;
 }

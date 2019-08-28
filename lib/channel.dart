@@ -1,4 +1,5 @@
 import 'controllers/admin_panel_controllers.dart';
+import 'controllers/score_board_controller.dart';
 import 'firescore.dart';
 
 class _FirescoreConfig extends Configuration {
@@ -52,6 +53,15 @@ class FirescoreChannel extends ApplicationChannel {
                 .route("/admin/games/:gameId/score_boards/[:scoreBoardId]")
                 .link(() => Authorizer.basic(AccountPasswordVerifier(context)))
                 .link(() => ManageScoreBoardController(context));
+
+        router
+                .route("/scores/token/:scoreBoardUui")
+                .link(() => GetTokenController());
+
+        router
+                .route("/scores")
+                .link(() => Authorizer.bearer(JwtVerifier()))
+                .link(() => CreateScoreController(context));
 
         return router;
     }
