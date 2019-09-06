@@ -1,0 +1,7 @@
+database:
+  username: "erick"
+  password: "123password"
+  host: "localhost"
+  port: 5432
+  databaseName: "firescore_test"
+
