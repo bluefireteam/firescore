@@ -19,10 +19,13 @@ export 'package:aqueduct/aqueduct.dart';
 ///           });
 ///         }
 ///
-class Harness extends TestHarness<FirescoreChannel> {
+class Harness extends TestHarness<FirescoreChannel> with TestHarnessORMMixin {
+  @override
+  ManagedContext get context => channel.context;
+
   @override
   Future onSetUp() async {
-
+    await resetData();
   }
 
   @override

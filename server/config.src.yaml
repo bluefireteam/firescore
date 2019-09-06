@@ -1,7 +1,6 @@
 database:
-  username: "erick"
-  password: "123password"
-  host: "localhost"
+  host: localhost
   port: 5432
-  databaseName: "firescore_test"
-
+  username: dart
+  password: dart
+  databaseName: dart_test
