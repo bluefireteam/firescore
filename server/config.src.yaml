@@ -4,3 +4,4 @@ database:
   username: dart
   password: dart
   databaseName: dart_test
+jwtSecret: "The name is Bond, James Bond"

@@ -1,5 +1,7 @@
-username: "user"
-password: "password"
-host: "host"
-port: port
-databaseName: "database"
+database:
+  username: "erick"
+  password: "123password"
+  host: "localhost"
+  port: 5432
+  databaseName: "firescore"
+jwtSecret: "You have no power here, Gandalf the Grey!"

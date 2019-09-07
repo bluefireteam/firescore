@@ -5,12 +5,15 @@ import 'package:uuid/uuid.dart';
 import '../model/account.dart';
 import '../model/game.dart';
 import '../model/score.dart';
+
+import '../repositories/account_repository.dart';
+
 import '../util.dart';
 
 class AccountPasswordVerifier implements AuthValidator {
-    AccountPasswordVerifier(this.context);
+    AccountPasswordVerifier(this.accountRepository);
 
-    final ManagedContext context;
+    final AccountRepository accountRepository;
 
     @override
     List<APISecurityRequirement> documentRequirementsForAuthorizer(APIDocumentContext context, Authorizer authorizer, {List<AuthScope> scopes}) {
@@ -21,10 +24,7 @@ class AccountPasswordVerifier implements AuthValidator {
     FutureOr<Authorization> validate<T>(AuthorizationParser<T> parser, T authorizationData, {List<AuthScope> requiredScope}) async {
         final credentials = authorizationData as AuthBasicCredentials;
 
-        final query = Query<Account>(context)
-                ..where((a) => a.email).equalTo(credentials.username);
-
-        final fetchedAccount = await query.fetchOne();
+        final fetchedAccount = await accountRepository.findByEmail(credentials.username);
 
         if (fetchedAccount != null) {
             if (fetchedAccount.password == credentials.password) {

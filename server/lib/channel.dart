@@ -1,16 +1,20 @@
 import 'controllers/admin_panel_controllers.dart';
 import 'controllers/score_board_controller.dart';
 import 'firescore.dart';
+import 'repositories/account_repository.dart';
 
 class _FirescoreConfig extends Configuration {
     _FirescoreConfig(String path): super.fromFile(File(path));
 
     DatabaseConfiguration database;
+    String jwtSecret;
 }
 
 class FirescoreChannel extends ApplicationChannel {
 
     ManagedContext context;
+    AccountRepository accountRepository;
+    String jwtSecret;
 
     @override
     Future prepare() async {
@@ -29,6 +33,10 @@ class FirescoreChannel extends ApplicationChannel {
         );
 
         context = ManagedContext(dataModel, persistentStore);
+
+        jwtSecret = config.jwtSecret;
+
+        accountRepository = AccountRepository(context);
     }
 
     @override
@@ -41,27 +49,27 @@ class FirescoreChannel extends ApplicationChannel {
 
         router
                 .route("/admin/account")
-                .link(() => Authorizer.basic(AccountPasswordVerifier(context)))
+                .link(() => Authorizer.basic(AccountPasswordVerifier(accountRepository)))
                 .link(() => AdminAccountController(context));
 
         router
                 .route("/admin/games/[:gameId]")
-                .link(() => Authorizer.basic(AccountPasswordVerifier(context)))
+                .link(() => Authorizer.basic(AccountPasswordVerifier(accountRepository)))
                 .link(() => ManageGamesController(context));
 
         router
                 .route("/admin/games/:gameId/score_boards/[:scoreBoardId]")
-                .link(() => Authorizer.basic(AccountPasswordVerifier(context)))
+                .link(() => Authorizer.basic(AccountPasswordVerifier(accountRepository)))
                 .link(() => ManageScoreBoardController(context));
 
         router
                 .route("/scores/token/:scoreBoardUui")
-                .link(() => GetTokenController());
+                .link(() => GetTokenController(jwtSecret));
 
         router
                 .route("/scores")
-                .link(() => Authorizer.bearer(JwtVerifier()))
-                .link(() => CreateScoreController(context));
+                .link(() => Authorizer.bearer(JwtVerifier(jwtSecret)))
+                .link(() => CreateScoreController(context, jwtSecret));
 
         router
                 .route("/scores/:scoreBoardUui")
