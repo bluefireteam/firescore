@@ -14,4 +14,7 @@ class AccountRepository {
       return await query.fetchOne();
     }
 
+    Future<List<Account>> fetchAll() async {
+      return await Query<Account>(context).fetch();
+    }
 }

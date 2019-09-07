@@ -1,18 +1,13 @@
 import 'dart:convert';
-import 'package:firescore/model/account.dart';
-import 'package:firescore/util.dart';
+import 'package:firescore/repositories/account_repository.dart';
+import 'data_creator_helper/accounts_creator.dart';
 import 'harness/app.dart';
 
 Future main() async {
   final harness = Harness()..install();
 
   test("GET /admin/account returns the ScoreBoard token", () async {
-
-    final account = Account();
-    account.email = "don@corleone.it";
-    account.password = generateMd5("vito");
-
-    final insertedAccount = await harness.application.channel.context.insertObject(account);
+    final insertedAccount =  await AccountsCreator(harness.application.channel.context).createAccount();
 
     final authentication = base64.encode(utf8.encode("${insertedAccount.email}:${insertedAccount.password}"));
 
@@ -32,7 +27,7 @@ Future main() async {
       "password": "123password",
     });
 
-    final accounts = await Query<Account>(harness.application.channel.context).fetch();
+    final accounts = await AccountRepository(harness.application.channel.context).fetchAll();
     expect(accounts.length, equals(1));
   });
 }
