@@ -2,6 +2,9 @@ import 'controllers/admin_panel_controllers.dart';
 import 'controllers/score_board_controller.dart';
 import 'firescore.dart';
 import 'repositories/account_repository.dart';
+import 'services/account_service.dart';
+import 'repositories/game_repository.dart';
+import 'services/game_service.dart';
 
 class _FirescoreConfig extends Configuration {
     _FirescoreConfig(String path): super.fromFile(File(path));
@@ -13,7 +16,13 @@ class _FirescoreConfig extends Configuration {
 class FirescoreChannel extends ApplicationChannel {
 
     ManagedContext context;
+
     AccountRepository accountRepository;
+    AccountService accountService;
+
+    GameRepository gameRepository;
+    GameService gameService;
+
     String jwtSecret;
 
     @override
@@ -37,6 +46,10 @@ class FirescoreChannel extends ApplicationChannel {
         jwtSecret = config.jwtSecret;
 
         accountRepository = AccountRepository(context);
+        accountService = AccountService(context);
+
+        gameRepository = GameRepository(context);
+        gameService = GameService(context);
     }
 
     @override
@@ -45,22 +58,22 @@ class FirescoreChannel extends ApplicationChannel {
 
         router
                 .route("/accounts")
-                .link(() => CreateAccountController(context));
+                .link(() => CreateAccountController(accountService));
 
         router
                 .route("/admin/account")
                 .link(() => Authorizer.basic(AccountPasswordVerifier(accountRepository)))
-                .link(() => AdminAccountController(context));
+                .link(() => AdminAccountController(accountRepository));
 
         router
                 .route("/admin/games/[:gameId]")
                 .link(() => Authorizer.basic(AccountPasswordVerifier(accountRepository)))
-                .link(() => ManageGamesController(context));
+                .link(() => ManageGamesController(accountRepository, gameRepository, gameService));
 
         router
                 .route("/admin/games/:gameId/score_boards/[:scoreBoardId]")
                 .link(() => Authorizer.basic(AccountPasswordVerifier(accountRepository)))
-                .link(() => ManageScoreBoardController(context));
+                .link(() => ManageScoreBoardController(context, accountRepository));
 
         router
                 .route("/scores/token/:scoreBoardUui")

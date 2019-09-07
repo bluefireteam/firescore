@@ -7,8 +7,10 @@ import '../model/game.dart';
 import '../model/score.dart';
 
 import '../repositories/account_repository.dart';
+import '../repositories/game_repository.dart';
 
-import '../util.dart';
+import '../services/account_service.dart';
+import '../services/game_service.dart';
 
 class AccountPasswordVerifier implements AuthValidator {
     AccountPasswordVerifier(this.accountRepository);
@@ -42,23 +44,20 @@ Map<String, dynamic> _mapAccount(Account account) => {
 };
 
 
-Future<Account> _getAccount(Request request, ManagedContext context) async {
+Future<Account> _getAccount(Request request, AccountRepository repository) async {
     final email = request.authorization.credentials.username;
 
-    final query = Query<Account>(context)
-            ..where((a) => a.email).equalTo(email);
-
-    return await query.fetchOne();
+    return await repository.findByEmail(email);
 }
 
 class AdminAccountController  extends ResourceController {
-    AdminAccountController(this.context);
+    AdminAccountController(this.repository);
 
-    final ManagedContext context;
+    final AccountRepository repository;
 
     @Operation.get()
     Future<Response> getAccount() async {
-        final account = await _getAccount(request, context);
+        final account = await _getAccount(request, repository);
 
         return Response.ok(_mapAccount(account));
     }
@@ -66,70 +65,64 @@ class AdminAccountController  extends ResourceController {
 }
 
 class CreateAccountController extends ResourceController {
-    CreateAccountController(this.context);
+    CreateAccountController(this.service);
 
-    final ManagedContext context;
+    final AccountService service;
 
 
     @Operation.post()
     Future<Response> createAccount(@Bind.body() Account account) async {
-        account.password = generateMd5(account.password);
-
-        final insertedAccount = await context.insertObject(account);
+        final insertedAccount = await service.createAccount(account);
 
         return Response.ok(_mapAccount(insertedAccount));
     }
 }
 
 class ManageGamesController extends ResourceController {
-    ManageGamesController(this.context);
+    ManageGamesController(this.accountRepository, this.repository, this.service);
 
-    final ManagedContext context;
+    final AccountRepository accountRepository;
+    final GameRepository repository;
+    final GameService service;
 
     @Operation.post()
     Future<Response> createGame(@Bind.body() Game game) async {
-        game.account = await _getAccount(request, context);
+        final account = await _getAccount(request, accountRepository);
 
-        final insertedGame = await context.insertObject(game);
+        final insertedGame = await service.createGameForAccount(game, account);
 
         return Response.ok(insertedGame);
     }
 
     @Operation.get()
     Future<Response> getGames() async {
-        final account = await _getAccount(request, context);
+        final account = await _getAccount(request, accountRepository);
 
-        final query = Query<Game>(context)
-                ..where((game) => game.account.id).equalTo(account.id);
-
-        final games = await query.fetch();
+        final games = await repository.fetchGamesFromAccount(account);
 
         return Response.ok(games);
     }
 
     @Operation.delete('gameId')
     Future<Response> deleteGame(@Bind.path('gameId') int id) async {
-        final account = await _getAccount(request, context);
+        final account = await _getAccount(request, accountRepository);
 
-        final query = Query<Game>(context)
-                ..where((game) => game.account.id).equalTo(account.id)
-                ..where((game) => game.id).equalTo(id);
-
-        await query.delete();
+        await service.deleteGameForAccount(id, account);
 
         return Response.noContent();
     }
 }
 
 class ManageScoreBoardController extends ResourceController {
-    ManageScoreBoardController(this.context);
+    ManageScoreBoardController(this.context, this.repository);
 
     final ManagedContext context;
+    final AccountRepository repository;
     final _uuid = Uuid();
 
     Future<Game> _fetchGame(int gameId, { bool fetchScoreBoards = false }) async {
 
-        final account = await _getAccount(request, context);
+        final account = await _getAccount(request, repository);
         final query = Query<Game>(context)
                 ..where((game) => game.account.id).equalTo(account.id)
                 ..where((game) => game.id).equalTo(gameId);
