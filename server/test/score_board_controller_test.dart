@@ -14,15 +14,25 @@ Future main() async {
 
     final insertedAccount = await harness.application.channel.context.insertObject(account);
 
-    print(base64.encode(utf8.encode(account.password)));
+    final authentication = base64.encode(utf8.encode("${insertedAccount.email}:${insertedAccount.password}"));
 
     expectResponse(await harness.agent.get("/admin/account", headers: {
-      "Authorization": "Basic ${base64.encode(utf8.encode(account.password))}",
-    }), 200, 
+      "Authorization": "Basic $authentication",
+    }), 200,
         body: {
           "id": insertedAccount.id,
           "email": insertedAccount.email,
         }
     );
+  });
+
+  test("POST /accounts creates a new account", () async {
+    await harness.agent.post("/accounts", body: {
+      "email": "bla@bla.com",
+      "password": "123password",
+    });
+
+    final accounts = await Query<Account>(harness.application.channel.context).fetch();
+    expect(accounts.length, equals(1));
   });
 }
