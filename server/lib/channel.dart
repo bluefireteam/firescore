@@ -2,8 +2,8 @@ import 'controllers/admin_panel_controllers.dart';
 import 'controllers/score_board_controller.dart';
 import 'firescore.dart';
 import 'repositories/account_repository.dart';
-import 'services/account_service.dart';
 import 'repositories/game_repository.dart';
+import 'services/account_service.dart';
 import 'services/game_service.dart';
 
 class _FirescoreConfig extends Configuration {

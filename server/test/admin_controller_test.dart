@@ -4,6 +4,7 @@ import 'package:firescore/repositories/account_repository.dart';
 import 'package:firescore/repositories/game_repository.dart';
 import 'data_creator_helper/accounts_creator.dart';
 import 'data_creator_helper/games_creator.dart';
+import 'data_creator_helper/score_board_creator.dart';
 import 'harness/app.dart';
 
 Future main() async {
@@ -88,5 +89,67 @@ Future main() async {
 
     final games = await GameRepository(context).fetchGamesFromAccount(insertedAccount);
     expect(games.length, equals(1));
+  });
+
+  test("POST /admin/games/:gameId/score_boards creates a scoreboard for that game", () async {
+    final insertedAccount =  await AccountsCreator(harness.application.channel.context).createAccount();
+    final authentication = _generateAuthorizaiton(insertedAccount);
+
+    final context = harness.application.channel.context;
+    final bgug = await GamesCreator(context).createGame(insertedAccount, name: "BGUG");
+    await harness.agent.post("/admin/games/${bgug.id}/score_boards",
+        headers: {
+          "Authorization": "Basic $authentication",
+        },
+        body: {
+          "name": "Points",
+        }
+    );
+
+    final updatedBgug = await GameRepository(context).fetchGamesFromAccountById(bgug.id, insertedAccount.id, includeScoreBoards: true);
+    expect(updatedBgug.scoreBoards.length, equals(1));
+  });
+
+  test("GET /admin/games/:gameId/score_boards returns the scoreboard list from that game", () async {
+    final insertedAccount =  await AccountsCreator(harness.application.channel.context).createAccount();
+    final authentication = _generateAuthorizaiton(insertedAccount);
+
+    final context = harness.application.channel.context;
+    final bgug = await GamesCreator(context).createGame(insertedAccount, name: "BGUG");
+
+    final coinsScoreBoard = await ScoreBoardsCreator(context).createScoreBoard(bgug, name: "Coins");
+    final pointsScoreBoard = await ScoreBoardsCreator(context).createScoreBoard(bgug, name: "Points");
+
+    expectResponse(await harness.agent.get("/admin/games/${bgug.id}/score_boards", headers: {
+      "Authorization": "Basic $authentication",
+    }), 200, body: [{
+      "id": coinsScoreBoard.id,
+      "name": "Coins",
+      "uuid": coinsScoreBoard.uuid,
+      "game": { "id": bgug.id}
+    }, {
+      "id": pointsScoreBoard.id,
+      "name": "Points",
+      "uuid": pointsScoreBoard.uuid,
+      "game": { "id": bgug.id}}
+    ]);
+  });
+
+  test("DELETE /admin/games/:gameId/score_boards/:scoreboardId deletes a scoreboard for that game", () async {
+    final insertedAccount =  await AccountsCreator(harness.application.channel.context).createAccount();
+    final authentication = _generateAuthorizaiton(insertedAccount);
+
+    final context = harness.application.channel.context;
+    final bgug = await GamesCreator(context).createGame(insertedAccount, name: "BGUG");
+    final pointsScoreBoard = await ScoreBoardsCreator(context).createScoreBoard(bgug);
+
+    await harness.agent.delete("/admin/games/${bgug.id}/score_boards/${pointsScoreBoard.id}",
+        headers: {
+          "Authorization": "Basic $authentication",
+        }
+    );
+
+    final updatedBgug = await GameRepository(context).fetchGamesFromAccountById(bgug.id, insertedAccount.id, includeScoreBoards: true);
+    expect(updatedBgug.scoreBoards.length, equals(0));
   });
 }
