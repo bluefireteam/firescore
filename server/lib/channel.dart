@@ -5,6 +5,7 @@ import 'repositories/account_repository.dart';
 import 'repositories/game_repository.dart';
 import 'services/account_service.dart';
 import 'services/game_service.dart';
+import 'services/score_board_service.dart';
 
 class _FirescoreConfig extends Configuration {
     _FirescoreConfig(String path): super.fromFile(File(path));
@@ -22,6 +23,8 @@ class FirescoreChannel extends ApplicationChannel {
 
     GameRepository gameRepository;
     GameService gameService;
+
+    ScoreBoardService scoreBoardService;
 
     String jwtSecret;
 
@@ -50,6 +53,8 @@ class FirescoreChannel extends ApplicationChannel {
 
         gameRepository = GameRepository(context);
         gameService = GameService(context);
+
+        scoreBoardService = ScoreBoardService(context);
     }
 
     @override
@@ -73,7 +78,7 @@ class FirescoreChannel extends ApplicationChannel {
         router
                 .route("/admin/games/:gameId/score_boards/[:scoreBoardId]")
                 .link(() => Authorizer.basic(AccountPasswordVerifier(accountRepository)))
-                .link(() => ManageScoreBoardController(context, accountRepository));
+                .link(() => ManageScoreBoardController(context, accountRepository, gameRepository, scoreBoardService));
 
         router
                 .route("/scores/token/:scoreBoardUui")
