@@ -122,20 +122,6 @@ class ManageScoreBoardController extends ResourceController {
   final GameRepository gameRepository;
   final ScoreBoardService scoreBoardService;
 
-  Future<Game> _fetchGame(int gameId, { bool fetchScoreBoards = false }) async {
-
-    final account = await _getAccount(request, repository);
-    final query = Query<Game>(context)
-        ..where((game) => game.account.id).equalTo(account.id)
-        ..where((game) => game.id).equalTo(gameId);
-
-    if (fetchScoreBoards) {
-      query.join(set: (game) => game.scoreBoards);
-    }
-
-    return await query.fetchOne();
-  }
-
   @Operation.post('gameId')
   Future<Response> createScoreBoard(@Bind.path('gameId') int gameId, @Bind.body() ScoreBoard scoreBoard) async {
     final account = await _getAccount(request, repository);
