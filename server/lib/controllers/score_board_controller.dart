@@ -6,7 +6,7 @@ import '../model/score.dart';
 
 String _generateToken(String secret, String scoreBoardUui) {
   final builder = JWTBuilder()
-      ..issuer = 'https://firescore.fireslime.xyz'
+      ..issuer = 'https://score.fireslime.xyz'
       ..expiresAt = DateTime.now().add(Duration(minutes: 3))
       ..setClaim('data', {'scoreBoardUui': scoreBoardUui});
 
