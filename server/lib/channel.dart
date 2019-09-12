@@ -12,6 +12,8 @@ class _FirescoreConfig extends Configuration {
 
     DatabaseConfiguration database;
     String jwtSecret;
+    String masterUser;
+    String masterPassword;
 }
 
 class FirescoreChannel extends ApplicationChannel {
@@ -27,6 +29,8 @@ class FirescoreChannel extends ApplicationChannel {
     ScoreBoardService scoreBoardService;
 
     String jwtSecret;
+    String masterUser;
+    String masterPassword;
 
     @override
     Future prepare() async {
@@ -47,6 +51,8 @@ class FirescoreChannel extends ApplicationChannel {
         context = ManagedContext(dataModel, persistentStore);
 
         jwtSecret = config.jwtSecret;
+        masterUser = config.masterUser;
+        masterPassword = config.masterPassword;
 
         accountRepository = AccountRepository(context);
         accountService = AccountService(context);
@@ -63,6 +69,7 @@ class FirescoreChannel extends ApplicationChannel {
 
         router
                 .route("/accounts")
+                .link(() => Authorizer.basic(MasterAccountVerifier(masterUser, masterPassword)))
                 .link(() => CreateAccountController(accountService));
 
         router

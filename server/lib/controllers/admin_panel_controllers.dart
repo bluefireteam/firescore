@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:aqueduct/aqueduct.dart';
-import 'package:uuid/uuid.dart';
 
 import '../model/account.dart';
 import '../model/game.dart';
@@ -13,6 +12,28 @@ import '../services/account_service.dart';
 import '../services/game_service.dart';
 import '../services/score_board_service.dart';
 
+class MasterAccountVerifier implements AuthValidator {
+  MasterAccountVerifier(this.masterUser, this.masterPassword);
+
+  final String masterUser;
+  final String masterPassword;
+
+  @override
+  List<APISecurityRequirement> documentRequirementsForAuthorizer(APIDocumentContext context, Authorizer authorizer, {List<AuthScope> scopes}) {
+    return null;
+  }
+
+  @override
+  FutureOr<Authorization> validate<T>(AuthorizationParser<T> parser, T authorizationData, {List<AuthScope> requiredScope}) async {
+    final credentials = authorizationData as AuthBasicCredentials;
+
+    if (credentials.username == masterUser && credentials.password == masterPassword) {
+      return Authorization(null, null, this, credentials: credentials);
+    }
+
+    return null;
+  }
+}
 class AccountPasswordVerifier implements AuthValidator {
   AccountPasswordVerifier(this.accountRepository);
 

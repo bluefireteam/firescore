@@ -5,3 +5,5 @@ database:
   port: 5432
   databaseName: "firescore"
 jwtSecret: "You have no power here, Gandalf the Grey!"
+masterUser: donvito
+masterPassword: corleone

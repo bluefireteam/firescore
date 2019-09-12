@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'package:firescore/model/account.dart';
 import 'package:firescore/repositories/account_repository.dart';
 import 'package:firescore/repositories/game_repository.dart';
 import 'data_creator_helper/accounts_creator.dart';
@@ -10,13 +9,13 @@ import 'harness/app.dart';
 Future main() async {
   final harness = Harness()..install();
 
-  String _generateAuthorizaiton(Account account) {
-    return base64.encode(utf8.encode("${account.email}:${account.password}"));
+  String _generateAuthorizaiton(String email, String password) {
+    return base64.encode(utf8.encode("${email}:${password}"));
   }
 
   test("GET /admin/account returns the ScoreBoard token", () async {
     final insertedAccount =  await AccountsCreator(harness.application.channel.context).createAccount();
-    final authentication = _generateAuthorizaiton(insertedAccount);
+    final authentication = _generateAuthorizaiton(insertedAccount.email, insertedAccount.password);
 
     expectResponse(await harness.agent.get("/admin/account", headers: {
       "Authorization": "Basic $authentication",
@@ -32,15 +31,24 @@ Future main() async {
     await harness.agent.post("/accounts", body: {
       "email": "bla@bla.com",
       "password": "123password",
+    }, headers: {
+      "Authorization": "Basic ${_generateAuthorizaiton("donvito", "corleone")}"
     });
 
     final accounts = await AccountRepository(harness.application.channel.context).fetchAll();
     expect(accounts.length, equals(1));
   });
 
+  test("POST /accounts without property password, returns 401", () async {
+    expectResponse(await harness.agent.post("/accounts", body: {
+      "email": "bla@bla.com",
+      "password": "123password",
+    }), 401);
+  });
+
   test("POST /admin/games creates a new game", () async {
     final insertedAccount =  await AccountsCreator(harness.application.channel.context).createAccount();
-    final authentication = _generateAuthorizaiton(insertedAccount);
+    final authentication = _generateAuthorizaiton(insertedAccount.email, insertedAccount.password);
 
     expectResponse(await harness.agent.post("/admin/games", body: { "name": "BGUG" }, headers: {
       "Authorization": "Basic $authentication",
@@ -55,7 +63,7 @@ Future main() async {
 
   test("GET /admin/games lists all the games from that account", () async {
     final insertedAccount =  await AccountsCreator(harness.application.channel.context).createAccount();
-    final authentication = _generateAuthorizaiton(insertedAccount);
+    final authentication = _generateAuthorizaiton(insertedAccount.email, insertedAccount.password);
 
     final bgug = await GamesCreator(harness.application.channel.context).createGame(insertedAccount, name: "BGUG");
     final bob = await GamesCreator(harness.application.channel.context).createGame(insertedAccount, name: "Bob Box");
@@ -77,7 +85,7 @@ Future main() async {
 
   test("DELETE /admin/games/:gameId deletes a game", () async {
     final insertedAccount =  await AccountsCreator(harness.application.channel.context).createAccount();
-    final authentication = _generateAuthorizaiton(insertedAccount);
+    final authentication = _generateAuthorizaiton(insertedAccount.email, insertedAccount.password);
 
     final context = harness.application.channel.context;
     final bgug = await GamesCreator(context).createGame(insertedAccount, name: "BGUG");
@@ -93,7 +101,7 @@ Future main() async {
 
   test("POST /admin/games/:gameId/score_boards creates a scoreboard for that game", () async {
     final insertedAccount =  await AccountsCreator(harness.application.channel.context).createAccount();
-    final authentication = _generateAuthorizaiton(insertedAccount);
+    final authentication = _generateAuthorizaiton(insertedAccount.email, insertedAccount.password);
 
     final context = harness.application.channel.context;
     final bgug = await GamesCreator(context).createGame(insertedAccount, name: "BGUG");
@@ -112,7 +120,7 @@ Future main() async {
 
   test("GET /admin/games/:gameId/score_boards returns the scoreboard list from that game", () async {
     final insertedAccount =  await AccountsCreator(harness.application.channel.context).createAccount();
-    final authentication = _generateAuthorizaiton(insertedAccount);
+    final authentication = _generateAuthorizaiton(insertedAccount.email, insertedAccount.password);
 
     final context = harness.application.channel.context;
     final bgug = await GamesCreator(context).createGame(insertedAccount, name: "BGUG");
@@ -137,7 +145,7 @@ Future main() async {
 
   test("DELETE /admin/games/:gameId/score_boards/:scoreboardId deletes a scoreboard for that game", () async {
     final insertedAccount =  await AccountsCreator(harness.application.channel.context).createAccount();
-    final authentication = _generateAuthorizaiton(insertedAccount);
+    final authentication = _generateAuthorizaiton(insertedAccount.email, insertedAccount.password);
 
     final context = harness.application.channel.context;
     final bgug = await GamesCreator(context).createGame(insertedAccount, name: "BGUG");
