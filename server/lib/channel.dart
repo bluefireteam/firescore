@@ -19,6 +19,7 @@ class _FirescoreConfig extends Configuration {
 class FirescoreChannel extends ApplicationChannel {
 
     ManagedContext context;
+    PersistentStore persistentStore;
 
     AccountRepository accountRepository;
     AccountService accountService;
@@ -40,12 +41,12 @@ class FirescoreChannel extends ApplicationChannel {
 
         final dataModel = ManagedDataModel.fromCurrentMirrorSystem();
 
-        final persistentStore = PostgreSQLPersistentStore.fromConnectionInfo(
-                config.database.username,
-                config.database.password,
-                config.database.host,
-                config.database.port,
-                config.database.databaseName
+        persistentStore = PostgreSQLPersistentStore.fromConnectionInfo(
+            config.database.username,
+            config.database.password,
+            config.database.host,
+            config.database.port,
+            config.database.databaseName
         );
 
         context = ManagedContext(dataModel, persistentStore);
@@ -99,6 +100,10 @@ class FirescoreChannel extends ApplicationChannel {
         router
                 .route("/scores/:scoreBoardUui")
                 .link(() => ListScoreController(context));
+
+        router
+                .route("/scoreboard/:scoreBoardUui/playerIds")
+                .link(() => ListUniquePlayerIdController(persistentStore));
 
         return router;
     }

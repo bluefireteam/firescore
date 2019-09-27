@@ -128,3 +128,24 @@ class ListScoreController extends ResourceController {
     return Response.ok(scores.map(_mapScore).toList());
   }
 }
+
+class ListUniquePlayerIdController extends ResourceController {
+  ListUniquePlayerIdController(this.persistentStore);
+
+  final PersistentStore persistentStore;
+
+  @Operation.get('scoreBoardUui')
+  Future<Response> listScores(
+      @Bind.path('scoreBoardUui') String scoreBoardUui,
+  ) async {
+
+    final result = await persistentStore.execute(
+        "select playerId from _score join _scoreboard on _score.scoreboard_id = _scoreboard.id where _scoreboard.uuid = @uuid",
+        substitutionValues: { "uuid": scoreBoardUui }
+    );
+
+    return Response.ok(
+        result.map((row) => row[0]).toList()
+    );
+  }
+}
