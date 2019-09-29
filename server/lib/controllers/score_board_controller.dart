@@ -3,6 +3,8 @@ import 'package:aqueduct/aqueduct.dart';
 import 'package:corsac_jwt/corsac_jwt.dart';
 
 import '../model/score.dart';
+import '../repositories/score_repository.dart';
+import '../services/score_board_service.dart';
 
 String _generateToken(String secret, String scoreBoardUui) {
   final builder = JWTBuilder()
@@ -83,9 +85,7 @@ class CreateScoreController extends ResourceController {
 
     final fetchedScoreBoard = await query.fetchOne();
 
-    score.scoreBoard = fetchedScoreBoard;
-
-    await context.insertObject(score);
+    await ScoreBoardService(context).createScore(fetchedScoreBoard, score);
 
     return Response.noContent();
   }
@@ -113,17 +113,11 @@ class ListScoreController extends ResourceController {
 
     final fetchedScoreBoard = await scoreBoardQuery.fetchOne();
 
-    var scoreQuery = Query<Score>(context)
-        ..where((s) => s.scoreBoard.id).equalTo(fetchedScoreBoard.id)
-        ..sortBy((s) => s.score, sortOrder == "ASC" ? QuerySortOrder.ascending : QuerySortOrder.descending)
-        ..fetchLimit = 100;
-
-    if (playerId != null) {
-      scoreQuery = scoreQuery
-          ..where((s) => s.playerId).equalTo(playerId);
-    }
-
-    final scores = await scoreQuery.fetch();
+    final scores = await ScoreRepository(context).listScoresFromBoard(
+        fetchedScoreBoard,
+        asc: sortOrder == "ASC",
+        playerId: playerId
+    );
 
     return Response.ok(scores.map(_mapScore).toList());
   }

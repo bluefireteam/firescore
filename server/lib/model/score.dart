@@ -31,6 +31,7 @@ class _Score {
     @Column(nullable: false, indexed: true)
     double score;
 
+    @Column(nullable: true, indexed: false)
     String metadata;
 
     @Relate(#scores, isRequired: true, onDelete: DeleteRule.cascade)

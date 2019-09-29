@@ -22,5 +22,20 @@ class ScoreBoardsCreator {
 
     return await context.insertObject(scoreBoard);
   }
+
+  Future<Score> createScore(ScoreBoard board, {
+    String playerId = "Tony Montana",
+    double score = 100,
+    String metadata
+  }) async {
+
+    final s = Score()
+        ..scoreBoard = board
+        ..playerId = playerId
+        ..score = score
+        ..metadata = metadata;
+
+    return await context.insertObject(s);
+  }
 }
 

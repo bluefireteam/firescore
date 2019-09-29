@@ -25,5 +25,11 @@ class ScoreBoardService {
 
     await query.delete();
   }
+
+  Future<void> createScore(ScoreBoard board, Score score) async {
+    score.scoreBoard = board;
+
+    await context.insertObject(score);
+  }
 }
 
