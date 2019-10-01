@@ -72,7 +72,7 @@ class CreateScoreController extends ResourceController {
   final ManagedContext context;
   final String _jwtSecret;
 
-  @Operation.post()
+  @Operation.put()
   Future<Response> createScore(@Bind.body() Score score, @Bind.header('Authorization') String authorization) async {
 
     final claims = _getTokenInfo(_jwtSecret, authorization.replaceFirst('Bearer ', ''));

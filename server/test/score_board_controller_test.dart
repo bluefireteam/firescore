@@ -7,7 +7,7 @@ import 'harness/app.dart';
 Future main() async {
   final harness = Harness()..install();
 
-  test("POST /scores creates a new score on the score board", () async {
+  test("PUT /scores creates a new score on the score board", () async {
     final context = harness.application.channel.context;
     final account = await AccountsCreator(context).createAccount();
     final game = await GamesCreator(context).createGame(account);
@@ -18,7 +18,7 @@ Future main() async {
     final body = await response.body.decode();
     final token = body["token"];
 
-    expectResponse(await harness.agent.post(
+    expectResponse(await harness.agent.put(
         "/scores",
         headers: {
           "Authorization": "Bearer ${token}"
@@ -28,6 +28,34 @@ Future main() async {
           "score": 300,
         }
     ), 204);
+
+    final results = await ScoreRepository(context).listScoresFromBoard(scoreBoard);
+    expect(results.length, equals(1));
+  });
+
+  test("PUT /scores twice, keeps only the last one", () async {
+    final context = harness.application.channel.context;
+    final account = await AccountsCreator(context).createAccount();
+    final game = await GamesCreator(context).createGame(account);
+    final scoreBoard = await ScoreBoardsCreator(context).createScoreBoard(game);
+
+    final response = await harness.agent.get("/scores/token/${scoreBoard.uuid}");
+
+    final body = await response.body.decode();
+    final token = body["token"];
+
+    for (var i = 1; i <= 2; i++) {
+      expectResponse(await harness.agent.put(
+              "/scores",
+              headers: {
+                "Authorization": "Bearer ${token}"
+              },
+              body: {
+                "playerId": "Tony Montana",
+                "score": 300 * i,
+              }
+      ), 204);
+    }
 
     final results = await ScoreRepository(context).listScoresFromBoard(scoreBoard);
     expect(results.length, equals(1));

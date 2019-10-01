@@ -29,7 +29,15 @@ class ScoreBoardService {
   Future<void> createScore(ScoreBoard board, Score score) async {
     score.scoreBoard = board;
 
-    await context.insertObject(score);
+    await context.transaction((transaction) async {
+
+      final query = Query<Score>(transaction)
+          ..where((s) => s.scoreBoard.id).equalTo(board.id)
+          ..where((s) => s.playerId).equalTo(score.playerId);
+
+      await query.delete();
+      await transaction.insertObject(score);
+    });
   }
 }
 
