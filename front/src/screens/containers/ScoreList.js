@@ -1,5 +1,6 @@
 import { connect } from "react-redux";
 import ScoreList from "../components/ScoreList";
+import { withRouter } from 'react-router-dom'
 
 const mapStateToProps = ({ scores, loading }) => {
     return { scores, loading }
@@ -24,4 +25,4 @@ const mapDispatchToProps = dispatch => {
     }
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(ScoreList)
+export default withRouter(connect(mapStateToProps, mapDispatchToProps)(ScoreList))
