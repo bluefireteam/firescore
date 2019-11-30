@@ -5,17 +5,20 @@ const mapStateToProps = (state) => {
     return { uuid: state.uuid, loading: state.loading }
 }
 
-const mapDispatchToProps = (dispatch) => {
+const mapDispatchToProps = dispatch => {
     return {
-        fetchScores: (uuid) => {
+        fetchScores: uuid => {
             dispatch({type: "LOADING_SCORES"})
 
             fetch(`https://api.score.fireslime.xyz/scores/${uuid}?sortOrder=DESC`)
-            .then((resp) => {
+            .then(resp => {
                 return resp.json()
             })
-            .then((scores) => {
+            .then(scores => {
                 dispatch({type: "LOAD_SCORES", payload: { scores }})
+            })
+            .catch(error => {
+                console.log("Fail to fetch scores", error)
             })
         }
     }

@@ -1,8 +1,8 @@
 import React from "react"
 import "./index.css"
 
-const component = ({ children }) => {
+const Title = ({ children }) => {
     return (<h1 className="title">{children}</h1>)
 }
 
-export default component
+export default Title
