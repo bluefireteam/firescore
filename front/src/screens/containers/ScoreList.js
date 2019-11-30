@@ -1,8 +1,8 @@
 import { connect } from "react-redux";
-import SearchForm from "../components/SearchForm";
+import ScoreList from "../components/ScoreList";
 
-const mapStateToProps = (state) => {
-    return { uuid: state.uuid, loading: state.loading }
+const mapStateToProps = ({ scores, loading }) => {
+    return { scores, loading }
 }
 
 const mapDispatchToProps = dispatch => {
@@ -24,4 +24,4 @@ const mapDispatchToProps = dispatch => {
     }
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(SearchForm)
+export default connect(mapStateToProps, mapDispatchToProps)(ScoreList)
