@@ -1,26 +1,26 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import './index.css';
+import { Provider } from 'react-redux'
 import ScoreList from './screens/containers/ScoreList';
 import * as serviceWorker from './serviceWorker';
 
-import { Provider } from 'react-redux'
 import store from './store'
 
-import {
-  BrowserRouter as Router,
-  Switch,
-  Route,
-  Link
-} from "react-router-dom";
-
+import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
+import Login from './screens/containers/Login';
+import './index.css';
 
 ReactDOM.render(
   <Provider store={store}>
     <Router>
-      <Route path="/scorelist">
-        <ScoreList />
-      </Route>
+      <Switch>
+        <Route path="/scorelist">
+          <ScoreList />
+        </Route>
+        <Route path="/">
+          <Login />
+        </Route>
+      </Switch>
     </Router>
   </Provider>
   , document.getElementById('root'));

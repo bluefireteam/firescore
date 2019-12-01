@@ -2,7 +2,7 @@ import { connect } from "react-redux";
 import ScoreList from "../components/ScoreList";
 import { withRouter } from 'react-router-dom'
 
-const mapStateToProps = ({ scores, loading }) => {
+const mapStateToProps = ({ score: { scores, loading }}) => {
     return { scores, loading }
 }
 
