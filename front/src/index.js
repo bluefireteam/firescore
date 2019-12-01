@@ -9,6 +9,7 @@ import * as serviceWorker from './serviceWorker';
 import Login from './screens/containers/Login';
 import GameList from './screens/containers/GameList';
 import ScoreList from './screens/containers/ScoreList';
+import GameScoreBoard from './screens/containers/GameScoreBoard';
 
 import './index.css';
 
@@ -21,6 +22,9 @@ ReactDOM.render(
         </Route>
         <Route path="/gamelist">
           <GameList />
+        </Route>
+        <Route path="/gameboard/:gameId">
+          <GameScoreBoard />
         </Route>
         <Route path="/">
           <Login />
