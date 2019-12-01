@@ -3,7 +3,6 @@ import Button from "../../../components/Button"
 import Label from "../../../components/Label"
 
 const Login = ({ login, loading }) => {
-    console.log(loading)
     const [username, setUsername] = useState()
     const [password, setPassword] = useState()
 
