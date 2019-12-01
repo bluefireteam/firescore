@@ -1,27 +1,15 @@
 import { connect } from "react-redux";
 import { withRouter } from 'react-router-dom'
 import ScoreList from "../components/ScoreList";
+import { fetchScoreList } from "../../actions/scorelist"
 
 const mapStateToProps = ({ score: { scores, loading }}) => {
     return { scores, loading }
 }
 
-const mapDispatchToProps = dispatch => {
+const mapDispatchToProps = (dispatch, { match: { params: { uuid }}}) => {
     return {
-        fetchScores: uuid => {
-            dispatch({type: "LOADING_SCORES"})
-
-            fetch(`https://api.score.fireslime.xyz/scores/${uuid}?sortOrder=DESC`)
-            .then(resp => {
-                return resp.json()
-            })
-            .then(scores => {
-                dispatch({type: "LOAD_SCORES", payload: { scores }})
-            })
-            .catch(error => {
-                console.log("Fail to fetch scores", error)
-            })
-        }
+        fetchScores: () => dispatch(fetchScoreList(uuid))
     }
 }
 

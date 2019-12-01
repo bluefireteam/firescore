@@ -1,4 +1,4 @@
-const initialState = { uuid: "", loading: false, scores: [] }
+const initialState = { uuid: "", loading: false, scores: null }
 
 const reducer = (state = initialState, action) => {
     switch(action.type) {

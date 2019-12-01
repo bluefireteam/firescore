@@ -7,7 +7,6 @@ export const fetchScoreboard = (gameId) => (dispatch, getState) => {
         return resp.json()
     })
     .then(scoreBoardList => {
-        console.log(scoreBoardList)
         dispatch({type: "LOAD_SCOREBOARD", payload: { scoreBoardList }})
     })
     .catch(error => {

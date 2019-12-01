@@ -17,7 +17,7 @@ ReactDOM.render(
   <Provider store={store}>
     <Router>
       <Switch>
-        <Route path="/scorelist">
+        <Route path="/scorelist/:uuid">
           <ScoreList />
         </Route>
         <Route path="/gamelist">

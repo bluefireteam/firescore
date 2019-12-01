@@ -1,4 +1,5 @@
 import React, { useEffect } from "react"
+import { Link } from "react-router-dom"
 
 const GameScoreBoard = ({ scoreBoardList, fetchScoreBoard }) => {
     useEffect(() => {
@@ -20,7 +21,7 @@ const GameScoreBoard = ({ scoreBoardList, fetchScoreBoard }) => {
                     {(scoreBoardList || []).map(scoreBoard => 
                         <tr key={`scoreBoard-roll-${scoreBoard.id}`}>
                             <td>{scoreBoard.id}</td>
-                            <td>{scoreBoard.name}</td>
+                            <td><Link to={`/scorelist/${scoreBoard.uuid}`}>{scoreBoard.name}</Link></td>
                         </tr>
                     )}
                 </tbody>
